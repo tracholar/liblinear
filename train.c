@@ -97,6 +97,7 @@ int flag_C_specified;
 int flag_p_specified;
 int flag_solver_specified;
 int nr_fold;
+int flag_hive = 0;
 double bias;
 
 int main(int argc, char **argv)
@@ -126,7 +127,11 @@ int main(int argc, char **argv)
 	else
 	{
 		model_=train(&prob, &param);
-		if(save_model(model_file_name, model_))
+		if(flag_hive)
+		{
+			print_model(model_);
+		}
+		else if(save_model(model_file_name, model_))
 		{
 			fprintf(stderr,"can't save model to file %s\n",model_file_name);
 			exit(1);
@@ -272,6 +277,9 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 					exit_with_help();
 				}
 				break;
+			case 'H': 
+				flag_hive = atoi(argv[i]); // hive mode 
+				break;
 
 			case 'q':
 				print_func = &print_null;
@@ -282,6 +290,8 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 				flag_find_parameters = 1;
 				i--;
 				break;
+			
+				
 
 			default:
 				fprintf(stderr,"unknown option: -%c\n", argv[i-1][1]);
@@ -293,22 +303,31 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 	set_print_string_function(print_func);
 
 	// determine filenames
-	if(i>=argc)
+	if(i>argc)
 		exit_with_help();
 
-	strcpy(input_file_name, argv[i]);
-
-	if(i<argc-1)
-		strcpy(model_file_name,argv[i+1]);
-	else
-	{
-		char *p = strrchr(argv[i],'/');
-		if(p==NULL)
-			p = argv[i];
-		else
-			++p;
-		sprintf(model_file_name,"%s.model",p);
+	if(i == argc){
+		input_file_name[0] = 0;
+	}else{
+		strcpy(input_file_name, argv[i]);
 	}
+
+	if(flag_hive){
+		model_file_name[0] = 0;
+	}else{
+		if(i<argc-1)
+			strcpy(model_file_name,argv[i+1]);
+		else
+		{
+			char *p = strrchr(argv[i],'/');
+			if(p==NULL)
+				p = argv[i];
+			else
+				++p;
+			sprintf(model_file_name,"%s.model",p);
+		}
+	}
+	
 
 	// default solver for parameter selection is L2R_L2LOSS_SVC
 	if(flag_find_parameters)
@@ -361,7 +380,13 @@ void read_problem(const char *filename)
 {
 	int max_index, inst_max_index, i;
 	size_t elements, j;
-	FILE *fp = fopen(filename,"r");
+	FILE *fp;
+	if(filename[0] == 0){
+		fp = stdin;
+	}else{
+		fp = fopen(filename,"r");
+	}
+	
 	char *endptr;
 	char *idx, *val, *label;
 

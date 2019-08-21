@@ -57,6 +57,7 @@ double predict_values(const struct model *model_, const struct feature_node *x, 
 double predict(const struct model *model_, const struct feature_node *x);
 double predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates);
 
+int print_model(const struct model *model_);
 int save_model(const char *model_file_name, const struct model *model_);
 struct model *load_model(const char *model_file_name);
 
