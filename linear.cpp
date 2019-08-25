@@ -2903,7 +2903,7 @@ int print_model(const struct model *model_)
 
 	fprintf(stderr, "nr_feature %d\n", nr_feature);
 
-	fprintf(fp, "%.6g\t", model_->bias);
+	fprintf(stderr, "bias %.6g\t", model_->bias);
 
 	for(i=0; i<w_size; i++)
 	{

@@ -277,9 +277,6 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 					exit_with_help();
 				}
 				break;
-			case 'H': 
-				flag_hive = atoi(argv[i]); // hive mode 
-				break;
 
 			case 'q':
 				print_func = &print_null;
@@ -308,6 +305,7 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 
 	if(i == argc){
 		input_file_name[0] = 0;
+		flag_hive = 1;
 	}else{
 		strcpy(input_file_name, argv[i]);
 	}
@@ -317,8 +315,7 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 	}else{
 		if(i<argc-1)
 			strcpy(model_file_name,argv[i+1]);
-		else
-		{
+		else{
 			char *p = strrchr(argv[i],'/');
 			if(p==NULL)
 				p = argv[i];
@@ -383,6 +380,21 @@ void read_problem(const char *filename)
 	FILE *fp;
 	if(filename[0] == 0){
 		fp = stdin;
+		char buff[1024];
+		char * tmpfile = "data.dat.tmp";
+		FILE * fout = fopen(tmpfile, "wb");
+		if(fout == NULL){
+			fprintf(stderr,"cannot open file %s\n", tmpfile);
+			exit(1);
+		}
+		while(!feof(fp)){
+			size_t nsize = fread(buff, sizeof(char), 1023, fp );
+			fwrite(buff, sizeof(char), nsize, fout);
+		}
+		fclose(fp);
+		fclose(fout);
+
+		fp = fopen(tmpfile, "r");
 	}else{
 		fp = fopen(filename,"r");
 	}
